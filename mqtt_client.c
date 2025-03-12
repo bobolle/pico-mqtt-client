@@ -5,18 +5,12 @@
 #include <string.h>
 #include "uss.h"
 
-uint8_t trigger_pin = 17;
-uint8_t echo_pin = 16;
-uint8_t green_light_pin = 15;
-uint8_t red_light_pin = 14;
-
 static mqtt_client_t *mqtt_client;
 static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection_status_t status);
 static void mqtt_pub_request_cb(void *arg, err_t result);
 
 int main() {
     stdio_init_all();
-    uss_init(trigger_pin, echo_pin);
 
     if (cyw43_arch_init()) {
         printf("failed to initalise\n");
@@ -45,15 +39,15 @@ int main() {
     };
 
     ip_addr_t broker_ip;
-    ip4addr_aton("192.168.1.13", &broker_ip);
+    ip4addr_aton("192.168.1.220", &broker_ip);
 
     err_t err = mqtt_client_connect(mqtt_client, &broker_ip, 1883, mqtt_connection_cb, NULL, &client_info);
 
     while (1) {
 
-        const char *payload = "testing";
+        const char *payload = "{\"value\": \"30\"}";
         err = mqtt_publish(mqtt_client, "pico/sensor/distance", payload, strlen(payload), 0, 0, mqtt_pub_request_cb, NULL);
-        sleep_ms(500);
+        sleep_ms(5000);
 
         if (err != ERR_OK) {
             break;
