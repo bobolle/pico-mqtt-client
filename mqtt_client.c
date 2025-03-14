@@ -28,7 +28,7 @@ int main() {
 
     mqtt_client = mqtt_client_new();
     struct mqtt_connect_client_info_t client_info = {
-        .client_id = "pico",
+        .client_id = "pico_w_01",
         .client_user = NULL,
         .client_pass = NULL,
         .keep_alive = 60,
