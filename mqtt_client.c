@@ -5,6 +5,10 @@
 #include <string.h>
 #include "uss.h"
 
+
+#define BROKER_ADDRESS "192.168.1.220"
+#define CLIENTID "pico_w_01"
+
 static mqtt_client_t *mqtt_client;
 static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection_status_t status);
 static void mqtt_pub_request_cb(void *arg, err_t result);
@@ -28,7 +32,7 @@ int main() {
 
     mqtt_client = mqtt_client_new();
     struct mqtt_connect_client_info_t client_info = {
-        .client_id = "pico_w_01",
+        .client_id = CLIENTID,
         .client_user = NULL,
         .client_pass = NULL,
         .keep_alive = 60,
@@ -39,14 +43,19 @@ int main() {
     };
 
     ip_addr_t broker_ip;
-    ip4addr_aton("192.168.1.220", &broker_ip);
+    ip4addr_aton(BROKER_ADDRESS, &broker_ip);
 
     err_t err = mqtt_client_connect(mqtt_client, &broker_ip, 1883, mqtt_connection_cb, NULL, &client_info);
 
     while (1) {
 
-        const char *payload = "{\"value\": \"30\"}";
-        err = mqtt_publish(mqtt_client, "pico/sensor/distance", payload, strlen(payload), 0, 0, mqtt_pub_request_cb, NULL);
+        char payload[50] = "{\"value\": \"30\"}";
+        snprintf(payload, sizeof(payload), "{\"value\": %d}", 30);
+
+        char topic[50];
+        snprintf(topic, sizeof(topic), "edge/%s/sensors/distance", CLIENTID);
+
+        err = mqtt_publish(mqtt_client, topic, payload, strlen(payload), 0, 0, mqtt_pub_request_cb, NULL);
         sleep_ms(5000);
 
         if (err != ERR_OK) {
